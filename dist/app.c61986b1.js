@@ -117,7 +117,9 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"app.js":[function(require,module,exports) {
+})({"app.ts":[function(require,module,exports) {
+"use strict";
+
 var container = document.getElementById('root');
 var ajax = new XMLHttpRequest();
 var content = document.createElement('div');
@@ -358,5 +360,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["C:/Users/sting/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","app.js"], null)
-//# sourceMappingURL=/app.c328ef1a.js.map
+},{}]},{},["C:/Users/sting/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","app.ts"], null)
+//# sourceMappingURL=/app.c61986b1.js.map
