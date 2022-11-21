@@ -361,18 +361,27 @@ exports.NewsDetailApi = exports.NewsFeedApi = void 0;
 var Api = /*#__PURE__*/function () {
   function Api(url) {
     (0, _classCallCheck2.default)(this, Api);
-    this.ajax = new XMLHttpRequest();
+    this.xhr = new XMLHttpRequest();
     this.url = url;
   }
   (0, _createClass2.default)(Api, [{
-    key: "getRequest",
-    value: function getRequest(callback) {
+    key: "getRequestWidthXHR",
+    value: function getRequestWidthXHR(callback) {
       var _this = this;
-      this.ajax.open('GET', this.url);
-      this.ajax.addEventListener('load', function () {
-        callback(JSON.parse(_this.ajax.response));
+      this.xhr.open('GET', this.url);
+      this.xhr.addEventListener('load', function () {
+        callback(JSON.parse(_this.xhr.response));
       });
-      this.ajax.send();
+      this.xhr.send();
+    }
+  }, {
+    key: "getRequestWidthPromise",
+    value: function getRequestWidthPromise(callback) {
+      fetch(this.url).then(function (response) {
+        return response.json();
+      }).then(callback).catch(function () {
+        console.error('Error');
+      });
     }
   }]);
   return Api;
@@ -386,9 +395,14 @@ var NewsFeedApi = /*#__PURE__*/function (_Api) {
     return _super.call(this, url);
   }
   (0, _createClass2.default)(NewsFeedApi, [{
-    key: "getData",
-    value: function getData(callback) {
-      return this.getRequest(callback);
+    key: "getDataWidthXHR",
+    value: function getDataWidthXHR(callback) {
+      return this.getRequestWidthXHR(callback);
+    }
+  }, {
+    key: "getDataWidthPromise",
+    value: function getDataWidthPromise(callback) {
+      return this.getRequestWidthXHR(callback);
     }
   }]);
   return NewsFeedApi;
@@ -402,9 +416,14 @@ var NewsDetailApi = /*#__PURE__*/function (_Api2) {
     return _super2.call(this, url);
   }
   (0, _createClass2.default)(NewsDetailApi, [{
-    key: "getData",
-    value: function getData(callback) {
-      return this.getRequest(callback);
+    key: "getDataWidthXHR",
+    value: function getDataWidthXHR(callback) {
+      return this.getRequestWidthXHR(callback);
+    }
+  }, {
+    key: "getDataWidthPromise",
+    value: function getDataWidthPromise(callback) {
+      return this.getRequestWidthXHR(callback);
     }
   }]);
   return NewsDetailApi;
@@ -453,7 +472,7 @@ var NewsFeedView = /*#__PURE__*/function (_view_1$default) {
       var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '1';
       _this.store.currentPage = Number(page);
       if (!_this.store.hasFeeds) {
-        _this.api.getData(function (feeds) {
+        _this.api.getDataWidthPromise(function (feeds) {
           _this.store.setFeeds(feeds);
           _this.renderView();
         });
@@ -516,7 +535,7 @@ var NewsDetailView = /*#__PURE__*/function (_view_1$default) {
     _this = _super.call(this, containerId, template);
     _this.render = function (id) {
       var api = new api_1.NewsDetailApi(config_1.CONTENT_URL.replace('@id', id));
-      api.getData(function (data) {
+      api.getDataWidthPromise(function (data) {
         var title = data.title,
           content = data.content,
           comments = data.comments;
