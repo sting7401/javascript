@@ -159,24 +159,34 @@ var Router = /*#__PURE__*/function () {
   function Router() {
     (0, _classCallCheck2.default)(this, Router);
     window.addEventListener('hashchange', this.route.bind(this));
-    this.routeTable = [];
+    this.isStart = false;
     this.defaultRoute = null;
+    this.routeTable = [];
   }
   (0, _createClass2.default)(Router, [{
     key: "setDefaultPage",
     value: function setDefaultPage(page) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       this.defaultRoute = {
         path: '',
-        page: page
+        page: page,
+        params: params
       };
     }
   }, {
     key: "addRoutePath",
     value: function addRoutePath(path, page) {
+      var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
       this.routeTable.push({
         path: path,
-        page: page
+        page: page,
+        params: params
       });
+      if (!this.isStart) {
+        this.isStart = true;
+        // Execute next tick
+        setTimeout(this.route.bind(this), 0);
+      }
     }
   }, {
     key: "route",
@@ -184,6 +194,7 @@ var Router = /*#__PURE__*/function () {
       var routePath = location.hash;
       if (routePath === '' && this.defaultRoute) {
         this.defaultRoute.page.render();
+        return;
       }
       var _iterator = _createForOfIteratorHelper(this.routeTable),
         _step;
@@ -191,8 +202,15 @@ var Router = /*#__PURE__*/function () {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var routeInfo = _step.value;
           if (routePath.indexOf(routeInfo.path) >= 0) {
-            routeInfo.page.render();
-            break;
+            if (routeInfo.params) {
+              var parseParams = routePath.match(routeInfo.params);
+              if (parseParams) {
+                routeInfo.page.render.apply(null, [parseParams[1]]);
+              }
+            } else {
+              routeInfo.page.render();
+            }
+            return;
           }
         }
       } catch (err) {
@@ -286,7 +304,7 @@ var View = /*#__PURE__*/function () {
     (0, _classCallCheck2.default)(this, View);
     var containerElement = document.getElementById(containerId);
     if (!containerElement) {
-      throw '안됨';
+      throw '최상위 컨테이너가 없어 UI를 진행하지 못합니다.';
     }
     this.container = containerElement;
     this.template = template;
@@ -307,13 +325,13 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "getHtml",
     value: function getHtml() {
-      var snapShot = this.htmlList.join('');
+      var snapshot = this.htmlList.join('');
       this.clearHtmlList();
-      return snapShot;
+      return snapshot;
     }
   }, {
-    key: "setTemplate",
-    value: function setTemplate(key, value) {
+    key: "setTemplateData",
+    value: function setTemplateData(key, value) {
       this.renderTemplate = this.renderTemplate.replace("{{__".concat(key, "__}}"), value);
     }
   }, {
@@ -401,8 +419,8 @@ exports.CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
 },{}],"src/page/news-feed-view.ts":[function(require,module,exports) {
 "use strict";
 
-var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
@@ -420,54 +438,44 @@ Object.defineProperty(exports, "__esModule", {
 var view_1 = __importDefault(require("../core/view"));
 var api_1 = require("../core/api");
 var config_1 = require("../config");
-var template = /* html */"\n<div class=\"bg-gray-600 min-h-screen\">\n    <div class=\"bg-white text-xl\">\n        <div class=\"mx-auto px-4\">\n            <div class=\"flex justify-between items-center py-6\">\n                <div class=\"flex justify-start\">\n                    <h1 class=\"font-extrabold text-xl\">NEWS</h1>\n                </div>\n                <div class=\"items-center justify-end\">\n                    <a href=\"#/page/{{__prev_page__}}\" class=\"text-gray-500\">\uC774\uC804</a>\n                    <a href=\"#/page/{{__next_page__}}\" class=\"text-gray-500 ml-4\">\uB2E4\uC74C</a>\n                </div>\n            </div>\n        </div>\n    </div>\n    <ul class=\"p-4 text-2xl text-gray-700\">\n        {{__news_feed__}}\n    </ul>\n</div>\n";
+var template = "\n<div class=\"bg-gray-600 min-h-screen\">\n  <div class=\"bg-white text-xl\">\n    <div class=\"mx-auto px-4\">\n      <div class=\"flex justify-between items-center py-6\">\n        <div class=\"flex justify-start\">\n          <h1 class=\"font-extrabold\">Hacker News</h1>\n        </div>\n        <div class=\"items-center justify-end\">\n          <a href=\"#/page/{{__prev_page__}}\" class=\"text-gray-500\">\n            Previous\n          </a>\n          <a href=\"#/page/{{__next_page__}}\" class=\"text-gray-500 ml-4\">\n            Next\n          </a>\n        </div>\n      </div> \n    </div>\n  </div>\n  <div class=\"p-4 text-2xl text-gray-700\">\n    {{__news_feed__}}        \n  </div>\n</div>\n";
 var NewsFeedView = /*#__PURE__*/function (_view_1$default) {
   (0, _inherits2.default)(NewsFeedView, _view_1$default);
   var _super = _createSuper(NewsFeedView);
-  function NewsFeedView(containerId) {
+  function NewsFeedView(containerId, store) {
     var _this;
     (0, _classCallCheck2.default)(this, NewsFeedView);
     _this = _super.call(this, containerId, template);
-    _this.feeds = window.store.feeds;
+    _this.render = function () {
+      var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '1';
+      _this.store.currentPage = Number(page);
+      for (var i = (_this.store.currentPage - 1) * 10; i < _this.store.currentPage * 10; i++) {
+        var _this$store$getFeed = _this.store.getFeed(i),
+          id = _this$store$getFeed.id,
+          title = _this$store$getFeed.title,
+          comments_count = _this$store$getFeed.comments_count,
+          user = _this$store$getFeed.user,
+          points = _this$store$getFeed.points,
+          time_ago = _this$store$getFeed.time_ago,
+          read = _this$store$getFeed.read;
+        _this.addHtml("\n        <div class=\"p-6 ".concat(read ? 'bg-red-500' : 'bg-white', " mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n          <div class=\"flex\">\n            <div class=\"flex-auto\">\n              <a href=\"#/show/").concat(id, "\">").concat(title, "</a>  \n            </div>\n            <div class=\"text-center text-sm\">\n              <div class=\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">").concat(comments_count, "</div>\n            </div>\n          </div>\n          <div class=\"flex mt-3\">\n            <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n              <div><i class=\"fas fa-user mr-1\"></i>").concat(user, "</div>\n              <div><i class=\"fas fa-heart mr-1\"></i>").concat(points, "</div>\n              <div><i class=\"far fa-clock mr-1\"></i>").concat(time_ago, "</div>\n            </div>  \n          </div>\n        </div>    \n      "));
+      }
+      _this.setTemplateData('news_feed', _this.getHtml());
+      _this.setTemplateData('prev_page', String(_this.store.prevPage));
+      _this.setTemplateData('next_page', String(_this.store.nextPage));
+      _this.updateView();
+    };
+    _this.store = store;
     _this.api = new api_1.NewsFeedApi(config_1.NEWS_URL);
-    if (window.store.feeds.length === 0) {
-      _this.feeds = window.store.feeds = _this.api.getData();
-      _this.makeFeeds();
+    if (!_this.store.hasFeeds) {
+      _this.store.setFeeds(_this.api.getData());
     }
     return _this;
   }
-  (0, _createClass2.default)(NewsFeedView, [{
-    key: "render",
-    value: function render() {
-      window.store.currentPage = Number(location.hash.substring(7) || 1);
-      for (var i = (window.store.currentPage - 1) * 10; i < window.store.currentPage * 10; i += 1) {
-        var _this$feeds$i = this.feeds[i],
-          id = _this$feeds$i.id,
-          title = _this$feeds$i.title,
-          comments_count = _this$feeds$i.comments_count,
-          user = _this$feeds$i.user,
-          points = _this$feeds$i.points,
-          time_ago = _this$feeds$i.time_ago,
-          read = _this$feeds$i.read;
-        this.addHtml( /* html */"\n\n            <div class=\"mt-6 p-6 ".concat(read ? ' bg-red-500' : 'bg-white', " rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n                <div class=\"flex\">\n                    <div class=\"flex-auto\">\n                        <a href=\"#/show/").concat(id, "\">").concat(title, "</a>\n                    </div>\n                    <div class=\"text-center text-sm\">\n                        <div class=\"\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">").concat(comments_count, "</div>\n                    </div>\n                </div>\n                <div class=\"flex mt-3\">\n                    <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                        <div><i class=\"fas fa-user mr-1\"></i>").concat(user, "</div>\n                        <div><i class=\"fas fa-heart mr-1\"></i>").concat(points, "</div>\n                        <div><i class=\"fas fa-clock mr-1\"></i>").concat(time_ago, "</div>\n                    </div>\n                </div>\n            </div>\n            "));
-      }
-      this.setTemplate('news_feed', this.getHtml());
-      this.setTemplate('prev_page', String(window.store.currentPage > 1 ? window.store.currentPage - 1 : 1));
-      this.setTemplate('next_page', String(window.store.currentPage ? window.store.currentPage + 1 : window.store.currentPage));
-      this.updateView();
-    }
-  }, {
-    key: "makeFeeds",
-    value: function makeFeeds() {
-      for (var i = 0; i < this.feeds.length; i += 1) {
-        this.feeds[i].read = false;
-      }
-    }
-  }]);
-  return NewsFeedView;
+  return (0, _createClass2.default)(NewsFeedView);
 }(view_1.default);
 exports.default = NewsFeedView;
-},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","@babel/runtime/helpers/inherits":"node_modules/@babel/runtime/helpers/inherits.js","@babel/runtime/helpers/possibleConstructorReturn":"node_modules/@babel/runtime/helpers/possibleConstructorReturn.js","@babel/runtime/helpers/getPrototypeOf":"node_modules/@babel/runtime/helpers/getPrototypeOf.js","../core/view":"src/core/view.ts","../core/api":"src/core/api.ts","../config":"src/config.ts"}],"src/page/news-detail-view.ts":[function(require,module,exports) {
+},{"@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/inherits":"node_modules/@babel/runtime/helpers/inherits.js","@babel/runtime/helpers/possibleConstructorReturn":"node_modules/@babel/runtime/helpers/possibleConstructorReturn.js","@babel/runtime/helpers/getPrototypeOf":"node_modules/@babel/runtime/helpers/getPrototypeOf.js","../core/view":"src/core/view.ts","../core/api":"src/core/api.ts","../config":"src/config.ts"}],"src/page/news-detail-view.ts":[function(require,module,exports) {
 "use strict";
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
@@ -489,39 +497,36 @@ Object.defineProperty(exports, "__esModule", {
 var view_1 = __importDefault(require("../core/view"));
 var api_1 = require("../core/api");
 var config_1 = require("../config");
+var template = "\n<div class=\"bg-gray-600 min-h-screen pb-8\">\n  <div class=\"bg-white text-xl\">\n    <div class=\"mx-auto px-4\">\n      <div class=\"flex justify-between items-center py-6\">\n        <div class=\"flex justify-start\">\n          <h1 class=\"font-extrabold\">Hacker News</h1>\n        </div>\n        <div class=\"items-center justify-end\">\n          <a href=\"#/page/{{__currentPage__}}\" class=\"text-gray-500\">\n            <i class=\"fa fa-times\"></i>\n          </a>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"h-full border rounded-xl bg-white m-6 p-4 \">\n    <h2>{{__title__}}</h2>\n    <div class=\"text-gray-400 h-20\">\n      {{__content__}}\n    </div>\n    {{__comments__}}\n  </div>\n</div>\n";
 var NewsDetailView = /*#__PURE__*/function (_view_1$default) {
   (0, _inherits2.default)(NewsDetailView, _view_1$default);
   var _super = _createSuper(NewsDetailView);
-  function NewsDetailView(containerId) {
+  function NewsDetailView(containerId, store) {
+    var _this;
     (0, _classCallCheck2.default)(this, NewsDetailView);
-    var template = /* html */"\n            <div class=\"bg-gray-600 min-h-screen pb-8\">\n                <div class=\"bg-white text-xl\">\n                    <div class=\"mx-auto px-4\">\n                        <div class=\"flex justify-between items-center py-6\">\n                            <div class=\"flex justify-start\">\n                                <h1 class=\"font-extrabold text-xl\">NEWS</h1>\n                            </div>\n                            <div class=\"items-center justify-end\">\n                                <a href=\"#/page/{{__currentPage__}}\" class=\"text-gray-500\">\n                                    <i class=\"fa fa-times\"></i>\n                                </a>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"h-full m-6 p-4 border rounded-xl bg-white\">\n                    <h1>{{__title__}}</h1>\n                    <div class=\"text-gray-400 h-20\">\n                       {{__content__}}\n                    </div>\n        \n                    {{__comment__}}\n                </div>\n            </div>\n        ";
-    return _super.call(this, containerId, template);
+    _this = _super.call(this, containerId, template);
+    _this.render = function (id) {
+      var api = new api_1.NewsDetailApi(config_1.CONTENT_URL.replace('@id', id));
+      var _api$getData = api.getData(),
+        title = _api$getData.title,
+        content = _api$getData.content,
+        comments = _api$getData.comments;
+      _this.store.makeRead(Number(id));
+      _this.setTemplateData('currentPage', _this.store.currentPage.toString());
+      _this.setTemplateData('title', title);
+      _this.setTemplateData('content', content);
+      _this.setTemplateData('comments', _this.makeComment(comments));
+      _this.updateView();
+    };
+    _this.store = store;
+    return _this;
   }
   (0, _createClass2.default)(NewsDetailView, [{
-    key: "render",
-    value: function render() {
-      var id = location.hash.substring(7);
-      var api = new api_1.NewsDetailApi(config_1.CONTENT_URL.replace('@id', id));
-      var newsDetail = api.getData();
-      for (var i = 0; i < window.store.feeds.length; i += 1) {
-        if (window.store.feeds[i].id === Number(id)) {
-          window.store.feeds[i].read = true;
-          break;
-        }
-      }
-      this.setTemplate('comment', this.makeComment(newsDetail.comments));
-      this.setTemplate('currentPage', String(window.store.currentPage));
-      this.setTemplate('title', newsDetail.title);
-      this.setTemplate('content', newsDetail.content);
-      this.updateView();
-    }
-  }, {
     key: "makeComment",
     value: function makeComment(comments) {
-      var commentString = [];
-      for (var i = 0; i < comments.length; i += 1) {
+      for (var i = 0; i < comments.length; i++) {
         var comment = comments[i];
-        this.addHtml( /* html */"\n                <div class=\"mt-4 pl-".concat(comment.level * 5, "\">\n                    <div class=\"text-gray-400\">\n                        <i class=\"fa fa-sort-up mr-2\"></i>\n                        <strong>").concat(comment.user, "</strong> ").concat(comment.time_ago, "\n                    </div>\n                    <p class=\"text-gray-700\">").concat(comment.content, "</p>\n                </div>\n            "));
+        this.addHtml("\n        <div style=\"padding-left: ".concat(comment.level * 40, "px;\" class=\"mt-4\">\n          <div class=\"text-gray-400\">\n            <i class=\"fa fa-sort-up mr-2\"></i>\n            <strong>").concat(comment.user, "</strong> ").concat(comment.time_ago, "\n          </div>\n          <p class=\"text-gray-700\">").concat(comment.content, "</p>\n        </div>      \n      "));
         if (comment.comments.length > 0) {
           this.addHtml(this.makeComment(comment.comments));
         }
@@ -558,7 +563,84 @@ Object.defineProperty(exports, "NewsDetailView", {
     return __importDefault(news_detail_view_1).default;
   }
 });
-},{"./news-feed-view":"src/page/news-feed-view.ts","./news-detail-view":"src/page/news-detail-view.ts"}],"src/app.ts":[function(require,module,exports) {
+},{"./news-feed-view":"src/page/news-feed-view.ts","./news-detail-view":"src/page/news-detail-view.ts"}],"src/store.ts":[function(require,module,exports) {
+"use strict";
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Store = void 0;
+var Store = /*#__PURE__*/function () {
+  function Store() {
+    (0, _classCallCheck2.default)(this, Store);
+    this.feeds = [];
+    this._currentPage = 1;
+  }
+  (0, _createClass2.default)(Store, [{
+    key: "currentPage",
+    get: function get() {
+      return this._currentPage;
+    },
+    set: function set(page) {
+      this._currentPage = page;
+    }
+  }, {
+    key: "nextPage",
+    get: function get() {
+      return this._currentPage + 1;
+    }
+  }, {
+    key: "prevPage",
+    get: function get() {
+      return this._currentPage > 1 ? this._currentPage - 1 : 1;
+    }
+  }, {
+    key: "numberOfFeed",
+    get: function get() {
+      return this.feeds.length;
+    }
+  }, {
+    key: "hasFeeds",
+    get: function get() {
+      return this.feeds.length > 0;
+    }
+  }, {
+    key: "getFeed",
+    value: function getFeed(position) {
+      return this.feeds[position];
+    }
+  }, {
+    key: "getAllFeeds",
+    value: function getAllFeeds() {
+      return this.feeds;
+    }
+  }, {
+    key: "setFeeds",
+    value: function setFeeds(feeds) {
+      this.feeds = feeds.map(function (feed) {
+        return Object.assign(Object.assign({}, feed), {
+          read: false
+        });
+      });
+    }
+  }, {
+    key: "makeRead",
+    value: function makeRead(id) {
+      var feed = this.feeds.find(function (feed) {
+        return feed.id === id;
+      });
+      if (feed) {
+        feed.read = true;
+      }
+    }
+  }]);
+  return Store;
+}();
+exports.Store = Store;
+},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js"}],"src/app.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -571,19 +653,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 var router_1 = __importDefault(require("./core/router"));
 var page_1 = require("./page");
-var store = {
-  currentPage: 1,
-  feeds: []
-};
-window.store = store;
+var store_1 = require("./store");
+var store = new store_1.Store();
 var router = new router_1.default();
-var newsFeedView = new page_1.NewsFeedView('root');
-var newsDetailView = new page_1.NewsDetailView('root');
+var newsFeedView = new page_1.NewsFeedView('root', store);
+var newsDetailView = new page_1.NewsDetailView('root', store);
 router.setDefaultPage(newsFeedView);
-router.addRoutePath('/page/', newsFeedView);
-router.addRoutePath('/show/', newsDetailView);
-router.route();
-},{"./core/router":"src/core/router.ts","./page":"src/page/index.ts"}],"C:/Users/sting/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+router.addRoutePath('/page/', newsFeedView, /page\/(\d+)/);
+router.addRoutePath('/show/', newsDetailView, /show\/(\d+)/);
+},{"./core/router":"src/core/router.ts","./page":"src/page/index.ts","./store":"src/store.ts"}],"C:/Users/sting/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

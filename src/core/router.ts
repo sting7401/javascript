@@ -1,37 +1,58 @@
-import {RouteInfo} from '../types';
+import { RouteInfo } from '../types';
 import View from './view';
 
 export default class Router {
-    routeTable : RouteInfo[];
-    defaultRoute: RouteInfo | null;
+  private isStart: boolean;
+  defaultRoute: RouteInfo | null;
+  routeTable: RouteInfo[];
 
-    constructor() {
-        window.addEventListener('hashchange', this.route.bind(this));
+  constructor() {
+    window.addEventListener('hashchange', this.route.bind(this));
+    
+    this.isStart = false;
+    this.defaultRoute = null;
+    this.routeTable = [];
+  }
 
-        this.routeTable= [];
-        this.defaultRoute = null;
+  setDefaultPage(page: View, params: RegExp | null = null): void {
+    this.defaultRoute = {
+      path: '', 
+      page, 
+      params,
+    };
+  }
+
+  addRoutePath(path: string, page: View, params: RegExp | null = null): void {
+    this.routeTable.push({ path, page, params });
+
+    if (!this.isStart) {
+      this.isStart = true;
+      // Execute next tick
+      setTimeout(this.route.bind(this), 0);
+    }
+  }
+
+  private route() {
+    const routePath: string = location.hash;
+    
+    if (routePath === '' && this.defaultRoute) {
+      this.defaultRoute.page.render();
+      return;
     }
 
-    setDefaultPage(page: View): void {
-        this.defaultRoute = {path: '', page}
+    for(const routeInfo of this.routeTable) {
+      if (routePath.indexOf(routeInfo.path) >= 0) {        
+        if (routeInfo.params) {
+          const parseParams = routePath.match(routeInfo.params);
+
+          if (parseParams) {
+            routeInfo.page.render.apply(null, [parseParams[1]]);
+          }          
+        } else {
+          routeInfo.page.render();
+        }       
+        return;
+      }  
     }
-
-    addRoutePath(path: string, page: View): void {
-        this.routeTable.push({path, page});
-    }
-
-    route() {
-        const routePath = location.hash;
-
-        if (routePath === '' && this.defaultRoute) {
-            this.defaultRoute.page.render();
-        }
-
-        for (const routeInfo of this.routeTable) { 
-            if (routePath.indexOf(routeInfo.path) >= 0) {
-                routeInfo.page.render();
-                break;
-            }
-        }
-    }
+  }
 }
