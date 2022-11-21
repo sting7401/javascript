@@ -140,6 +140,13 @@ function makeFeeds(feeds) {
   }
   return feeds;
 }
+function updateView(html) {
+  if (container) {
+    container.innerHTML = html;
+  } else {
+    console.error('안됨');
+  }
+}
 function newsFeed() {
   var newsFeed = store.feeds;
   var newsList = [];
@@ -151,9 +158,9 @@ function newsFeed() {
     newsList.push( /* html */"\n\n        <div class=\"mt-6 p-6 ".concat(newsFeed[i].read ? ' bg-red-500' : 'bg-white', " rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n            <div class=\"flex\">\n                <div class=\"flex-auto\">\n                    <a href=\"#/show/").concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, "</a>\n                </div>\n                <div class=\"text-center text-sm\">\n                    <div class=\"\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">").concat(newsFeed[i].comments_count, "</div>\n                </div>\n            </div>\n            <div class=\"flex mt-3\">\n                <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                    <div><i class=\"fas fa-user mr-1\"></i>").concat(newsFeed[i].user, "</div>\n                    <div><i class=\"fas fa-heart mr-1\"></i>").concat(newsFeed[i].points, "</div>\n                    <div><i class=\"fas fa-clock mr-1\"></i>").concat(newsFeed[i].time_ago, "</div>\n                </div>\n            </div>\n        </div>\n        "));
   }
   template = template.replace('{{__news_feed__}}', newsList.join(''));
-  template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage - 1 : 1);
-  template = template.replace('{{__next_page__}}', store.currentPage ? store.currentPage + 1 : store.currentPage);
-  container.innerHTML = template;
+  template = template.replace('{{__prev_page__}}', String(store.currentPage > 1 ? store.currentPage - 1 : 1));
+  template = template.replace('{{__next_page__}}', String(store.currentPage ? store.currentPage + 1 : store.currentPage));
+  updateView(template);
 }
 function newsDetail() {
   var id = location.hash.substring(7);
@@ -165,18 +172,18 @@ function newsDetail() {
       break;
     }
   }
-  function makeComment(comments) {
-    var called = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-    var commentString = [];
-    for (var _i = 0; _i < comments.length; _i += 1) {
-      commentString.push( /* html */"\n                <div class=\"mt-4 pl-".concat(called * 5, "\">\n                    <div class=\"text-gray-400\">\n                        <i class=\"fa fa-sort-up mr-2\"></i>\n                        <strong>").concat(comments[_i].user, "</strong> ").concat(comments[_i].time_ago, "\n                    </div>\n                    <p class=\"text-gray-700\">").concat(comments[_i].content, "</p>\n                </div>\n            "));
-      if (comments[_i].comments.length > 0) {
-        commentString.push(makeComment(comments[_i].comments, called + 1));
-      }
+  updateView(template.replace('{{__comment__}}', makeComment(newsContent.comments)));
+}
+function makeComment(comments) {
+  var commentString = [];
+  for (var i = 0; i < comments.length; i += 1) {
+    var comment = comments[i];
+    commentString.push( /* html */"\n            <div class=\"mt-4 pl-".concat(comment.level * 5, "\">\n                <div class=\"text-gray-400\">\n                    <i class=\"fa fa-sort-up mr-2\"></i>\n                    <strong>").concat(comment.user, "</strong> ").concat(comment.time_ago, "\n                </div>\n                <p class=\"text-gray-700\">").concat(comment.content, "</p>\n            </div>\n        "));
+    if (comment.comments.length > 0) {
+      commentString.push(makeComment(comment.comments));
     }
-    return commentString.join('');
   }
-  container.innerHTML = template.replace('{{__comment__}}', makeComment(newsContent.comments));
+  return commentString.join('');
 }
 function router() {
   var routePath = location.hash;
@@ -216,7 +223,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2734" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "3190" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
