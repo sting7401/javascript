@@ -117,9 +117,110 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"app.ts":[function(require,module,exports) {
+})({"node_modules/@babel/runtime/helpers/setPrototypeOf.js":[function(require,module,exports) {
+function _setPrototypeOf(o, p) {
+  module.exports = _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
+  return _setPrototypeOf(o, p);
+}
+module.exports = _setPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{}],"node_modules/@babel/runtime/helpers/inherits.js":[function(require,module,exports) {
+var setPrototypeOf = require("./setPrototypeOf.js");
+function _inherits(subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function");
+  }
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      writable: true,
+      configurable: true
+    }
+  });
+  Object.defineProperty(subClass, "prototype", {
+    writable: false
+  });
+  if (superClass) setPrototypeOf(subClass, superClass);
+}
+module.exports = _inherits, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{"./setPrototypeOf.js":"node_modules/@babel/runtime/helpers/setPrototypeOf.js"}],"node_modules/@babel/runtime/helpers/typeof.js":[function(require,module,exports) {
+function _typeof(obj) {
+  "@babel/helpers - typeof";
+
+  return (module.exports = _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports), _typeof(obj);
+}
+module.exports = _typeof, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{}],"node_modules/@babel/runtime/helpers/assertThisInitialized.js":[function(require,module,exports) {
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+  return self;
+}
+module.exports = _assertThisInitialized, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{}],"node_modules/@babel/runtime/helpers/possibleConstructorReturn.js":[function(require,module,exports) {
+var _typeof = require("./typeof.js")["default"];
+var assertThisInitialized = require("./assertThisInitialized.js");
+function _possibleConstructorReturn(self, call) {
+  if (call && (_typeof(call) === "object" || typeof call === "function")) {
+    return call;
+  } else if (call !== void 0) {
+    throw new TypeError("Derived constructors may only return object or undefined");
+  }
+  return assertThisInitialized(self);
+}
+module.exports = _possibleConstructorReturn, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{"./typeof.js":"node_modules/@babel/runtime/helpers/typeof.js","./assertThisInitialized.js":"node_modules/@babel/runtime/helpers/assertThisInitialized.js"}],"node_modules/@babel/runtime/helpers/getPrototypeOf.js":[function(require,module,exports) {
+function _getPrototypeOf(o) {
+  module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
+  return _getPrototypeOf(o);
+}
+module.exports = _getPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{}],"node_modules/@babel/runtime/helpers/classCallCheck.js":[function(require,module,exports) {
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+module.exports = _classCallCheck, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{}],"node_modules/@babel/runtime/helpers/createClass.js":[function(require,module,exports) {
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
+  return Constructor;
+}
+module.exports = _createClass, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{}],"app.ts":[function(require,module,exports) {
 "use strict";
 
+var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
+var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 var container = document.getElementById('root');
 var ajax = new XMLHttpRequest();
 var content = document.createElement('div');
@@ -129,6 +230,52 @@ var store = {
   currentPage: 1,
   feeds: []
 };
+var Api = /*#__PURE__*/function () {
+  function Api(url) {
+    (0, _classCallCheck2.default)(this, Api);
+    this.url = url;
+    this.ajax = new XMLHttpRequest();
+  }
+  (0, _createClass2.default)(Api, [{
+    key: "getRequest",
+    value: function getRequest() {
+      this.ajax.open('GET', this.url, false);
+      this.ajax.send();
+      return JSON.parse(this.ajax.response);
+    }
+  }]);
+  return Api;
+}();
+var NewsFeedApi = /*#__PURE__*/function (_Api) {
+  (0, _inherits2.default)(NewsFeedApi, _Api);
+  var _super = _createSuper(NewsFeedApi);
+  function NewsFeedApi() {
+    (0, _classCallCheck2.default)(this, NewsFeedApi);
+    return _super.apply(this, arguments);
+  }
+  (0, _createClass2.default)(NewsFeedApi, [{
+    key: "getData",
+    value: function getData() {
+      return this.getRequest();
+    }
+  }]);
+  return NewsFeedApi;
+}(Api);
+var NewsDetailApi = /*#__PURE__*/function (_Api2) {
+  (0, _inherits2.default)(NewsDetailApi, _Api2);
+  var _super2 = _createSuper(NewsDetailApi);
+  function NewsDetailApi() {
+    (0, _classCallCheck2.default)(this, NewsDetailApi);
+    return _super2.apply(this, arguments);
+  }
+  (0, _createClass2.default)(NewsDetailApi, [{
+    key: "getData",
+    value: function getData() {
+      return this.getRequest();
+    }
+  }]);
+  return NewsDetailApi;
+}(Api);
 function getData(url) {
   ajax.open('GET', url, false);
   ajax.send();
@@ -148,11 +295,12 @@ function updateView(html) {
   }
 }
 function newsFeed() {
+  var api = new NewsFeedApi(NEWS_URL);
   var newsFeed = store.feeds;
   var newsList = [];
   var template = /* html */"\n        <div class=\"bg-gray-600 min-h-screen\">\n            <div class=\"bg-white text-xl\">\n                <div class=\"mx-auto px-4\">\n                    <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                            <h1 class=\"font-extrabold text-xl\">NEWS</h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                            <a href=\"#/page/{{__prev_page__}}\" class=\"text-gray-500\">\uC774\uC804</a>\n                            <a href=\"#/page/{{__next_page__}}\" class=\"text-gray-500 ml-4\">\uB2E4\uC74C</a>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <ul class=\"p-4 text-2xl text-gray-700\">\n                {{__news_feed__}}\n            </ul>\n        </div>\n    ";
   if (newsFeed.length === 0) {
-    newsFeed = store.feeds = makeFeeds(getData(NEWS_URL));
+    newsFeed = store.feeds = makeFeeds(api.getData());
   }
   for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i += 1) {
     newsList.push( /* html */"\n\n        <div class=\"mt-6 p-6 ".concat(newsFeed[i].read ? ' bg-red-500' : 'bg-white', " rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n            <div class=\"flex\">\n                <div class=\"flex-auto\">\n                    <a href=\"#/show/").concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, "</a>\n                </div>\n                <div class=\"text-center text-sm\">\n                    <div class=\"\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">").concat(newsFeed[i].comments_count, "</div>\n                </div>\n            </div>\n            <div class=\"flex mt-3\">\n                <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                    <div><i class=\"fas fa-user mr-1\"></i>").concat(newsFeed[i].user, "</div>\n                    <div><i class=\"fas fa-heart mr-1\"></i>").concat(newsFeed[i].points, "</div>\n                    <div><i class=\"fas fa-clock mr-1\"></i>").concat(newsFeed[i].time_ago, "</div>\n                </div>\n            </div>\n        </div>\n        "));
@@ -164,7 +312,8 @@ function newsFeed() {
 }
 function newsDetail() {
   var id = location.hash.substring(7);
-  var newsContent = getData(CONTENT_URL.replace('@id', id));
+  var api = new NewsDetailApi(CONTENT_URL.replace('@id', id));
+  var newsContent = api.getData();
   var template = /* html */"\n        <div class=\"bg-gray-600 min-h-screen pb-8\">\n            <div class=\"bg-white text-xl\">\n                <div class=\"mx-auto px-4\">\n                    <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                            <h1 class=\"font-extrabold text-xl\">NEWS</h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                            <a href=\"#/page/".concat(store.currentPage, "\" class=\"text-gray-500\">\n                                <i class=\"fa fa-times\"></i>\n                            </a>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class=\"h-full m-6 p-4 border rounded-xl bg-white\">\n                <h1>").concat(newsContent.title, "</h1>\n                <div class=\"text-gray-400 h-20\">\n                    ").concat(newsContent.content, "\n                </div>\n    \n                {{__comment__}}\n            </div>\n        </div>\n    ");
   for (var i = 0; i < store.feeds.length; i += 1) {
     if (store.feeds[i].id === Number(id)) {
@@ -198,7 +347,7 @@ function router() {
 }
 window.addEventListener('hashchange', router);
 router();
-},{}],"C:/Users/sting/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/inherits":"node_modules/@babel/runtime/helpers/inherits.js","@babel/runtime/helpers/possibleConstructorReturn":"node_modules/@babel/runtime/helpers/possibleConstructorReturn.js","@babel/runtime/helpers/getPrototypeOf":"node_modules/@babel/runtime/helpers/getPrototypeOf.js","@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js"}],"C:/Users/sting/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
