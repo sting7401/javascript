@@ -9,21 +9,9 @@ export default class Api {
     this.url = url;
   }
 
-  getRequestWidthXHR<AjaxResponse>(callback: (data: AjaxResponse) => void): void {
-    this.xhr.open('GET', this.url);
-    this.xhr.addEventListener('load', () => {
-       callback( JSON.parse(this.xhr.response) as AjaxResponse);
-    });
-    this.xhr.send();
-  }
-
-  getRequestWidthPromise<AjaxResponse>(callback: (data: AjaxResponse) => void): void {
-    fetch(this.url)
-    .then(response => response.json())
-    .then(callback)
-    .catch(() => {
-        console.error('Error');
-    });
+  async request<AjaxResponse>(): Promise<AjaxResponse> {
+    const response = await fetch(this.url);
+    return response.json() as AjaxResponse;
   }
 }
 
@@ -32,12 +20,8 @@ export class NewsFeedApi extends Api {
     super(url);
   }
 
-  getDataWidthXHR(callback: (data: NewsFeed[]) => void): void {
-    return this.getRequestWidthXHR<NewsFeed[]>(callback);
-  }
-
-  getDataWidthPromise(callback: (data: NewsFeed[]) => void): void {
-    return this.getRequestWidthXHR<NewsFeed[]>(callback);
+  async getData(): Promise<NewsFeed[]> {
+    return this.request<NewsFeed[]>();
   }
 }
 
@@ -46,11 +30,7 @@ export class NewsDetailApi extends Api {
     super(url);
   }
 
-  getDataWidthXHR(callback: (data: NewsDetail) => void): void {
-    return this.getRequestWidthXHR<NewsDetail>(callback);
-  }
-
-  getDataWidthPromise(callback: (data: NewsDetail) => void): void {
-    return this.getRequestWidthXHR<NewsDetail>(callback);
+  async getData(): Promise<NewsDetail> {
+    return this.request<NewsDetail>();
   }
 }
